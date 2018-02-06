@@ -4,6 +4,9 @@
 
 #define DEFAULT_INPUT_FILE "processes.in"
 
+// Set to 1 to print debug statements
+#define DEBUG 1
+
 #define FCFS 0;
 #define SJF 1;
 #define RR 2;
@@ -15,7 +18,7 @@ typedef struct Process {
     int burstTime;
 } Process;
 
-// Holds information for a
+// Holds information for a timeline of processes
 typedef struct Timeline {
     int processCount;
     int runTime;
@@ -25,7 +28,7 @@ typedef struct Timeline {
     Process **processes;
 } Timeline;
 
-void readInputFile(Timeline *inputTimeline)
+Timeline *createTimeline()
 {
     char line[256];
     char tempToken[256];
@@ -34,16 +37,16 @@ void readInputFile(Timeline *inputTimeline)
     int headerComplete = 0;
     int i;
 
+    Timeline *inputTimeline = malloc(sizeof(Timeline));
+
     FILE *inputFile = fopen(DEFAULT_INPUT_FILE, "r");
 
     if (inputFile == NULL) {
         printf("Input file could not be opened.");
-        return;
+        return NULL;
     }
 
     while (fgets(line, sizeof(line), inputFile)) {
-        printf("%s", line);
-
         if (strcmp(line, "end") == 0) {
             break;
         }
@@ -74,17 +77,16 @@ void readInputFile(Timeline *inputTimeline)
         }
     }
 
-    // Make space for the processes
+    // Allocate memory for the processes array
     inputTimeline->processes = malloc(sizeof(Process *) * inputTimeline->processCount);
 
-    // Make space for the process names
+    // Allocate memory for each individual process
     for (i = 0; i < inputTimeline->processCount; i++) {
         inputTimeline->processes[i] = malloc(sizeof(Process));
         inputTimeline->processes[i]->processName = malloc(sizeof(char *) * 256);
     }
 
-    // EXAMPLE: process name P1 arrival 3 burst 5
-    //          process name P2 arrival 0 burst 9
+    // Populate information for each individual process
     for (i = 0; i < inputTimeline->processCount; i++) {
         fgets(line, sizeof(line), inputFile);
 
@@ -92,34 +94,62 @@ void readInputFile(Timeline *inputTimeline)
             break;
         }
 
-        sscanf(line, "%*s %*s %s %*s %d %*s %d", inputTimeline->processes[i]->processName, &inputTimeline->processes[i]->arrivalTime, &inputTimeline->processes[i]->burstTime);
+        sscanf(line, "%*s %*s %s %*s %d %*s %d",
+               inputTimeline->processes[i]->processName,
+               &inputTimeline->processes[i]->arrivalTime,
+               &inputTimeline->processes[i]->burstTime
+               );
     }
 
-    printf("\n\n");
-    printf("Process Count        : %d\n", inputTimeline->processCount);
-    printf("Run Time             : %d\n", inputTimeline->runTime);
-    printf("Scheduling Algorithm : %d\n", inputTimeline->schedulingAlgorithm);
-    printf("Time Quantum         : %d\n", inputTimeline->timeQuantum);
+    if (DEBUG) {
+        printf("\nTIMELINE INFORMATION\n\n");
+        printf("Process Count        : %d\n", inputTimeline->processCount);
+        printf("Total Run Time       : %d\n", inputTimeline->runTime);
+        printf("Scheduling Algorithm : %d\n", inputTimeline->schedulingAlgorithm);
+        printf("Time Quantum         : %d\n", inputTimeline->timeQuantum);
+        printf("\n---------------------\n\n");
+    }
 
     fclose(inputFile);
+
+    return inputTimeline;
+}
+
+void freeTimeline(Timeline *timeline)
+{
+    int i;
+    int processCount = timeline->processCount;
+
+    // Free memory for each individual process
+    for (i = 0; i < processCount; i++) {
+        free(timeline->processes[i]->processName);
+        free(timeline->processes[i]);
+    }
+
+    // Free memory for the processes array
+    free(timeline->processes);
+
+    // Free memory for the timeline
+    free(timeline);
 }
 
 int main(void)
 {
-    Timeline *inputTimeline = malloc(sizeof(Timeline));
+    Timeline *timeline = createTimeline();
 
     int i;
 
-    readInputFile(inputTimeline);
-
-    for (i = 0; i < inputTimeline->processCount; i++) {
-        printf("%s %d %d\n", inputTimeline->processes[i]->processName, inputTimeline->processes[i]->arrivalTime, inputTimeline->processes[i]->burstTime);
+    // Print all stored processes (for debug purposes)
+    if (DEBUG) {
+        printf("PROCESSES INFORMATION\n\n");
+        for (i = 0; i < timeline->processCount; i++) {
+            printf("Process Name: %s\n", timeline->processes[i]->processName);
+            printf("Arrival Time: %d\n", timeline->processes[i]->arrivalTime);
+            printf("Burst Time  : %d\n\n", timeline->processes[i]->burstTime);
+        }
     }
 
-    for (i = 0; i < inputTimeline->processCount; i++) {
-        // free(inputTimeline->processes[i]->processName);
-    }
-    // free(inputTimeline->processes);
+    freeTimeline(timeline);
 
     return 0;
 }
