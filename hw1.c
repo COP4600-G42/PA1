@@ -135,36 +135,33 @@ void freeTimeline(Timeline *timeline)
     // Free memory for the timeline
     free(timeline);
 }
-void swapJobs(Process *xp, Process *yp)
+void swaptimeline->processes(Process *xp, Process *yp)
 {
     Process temp = *xp;
     *xp = *yp;
     *yp = temp;
 }
-Process * arrivalList (Timeline *timeline)
+void sortByArrivalTime (Timeline *timeline)
 {  
    int i,j,a; 
    int processCount = timeline->processCount;
    
-   Process* jobs = malloc(sizeof(Process *) * inputTimeline->processCount);
+   // Process* timeline->processes = malloc(sizeof(Process *) * inputTimeline->processCount);
 
-   for (a=0; a<processCount); a++ ){
+   // for (a=0; a<processCount); a++ ){
 
-    timeline->processes[a]->processName = jobs[a]->processName;
-    timeline->processes[a]->arrivalTime= jobs[a]->arrivalTime;
-    timeline->processes[a]->burstTime = jobs[a]->burstTime;
-    timeline->processes[a]->timeLeft = jobs[a]->timeLeft;
+   //  timeline->processes[a]->processName = timeline->processes[a]->processName;
+   //  timeline->processes[a]->arrivalTime= timeline->processes[a]->arrivalTime;
+   //  timeline->processes[a]->burstTime = timeline->processes[a]->burstTime;
+   //  timeline->processes[a]->timeLeft = timeline->processes[a]->timeLeft;
     
-   }
+   // }
   
 
    for (i = 0; i < processCount-1; i++)        
        for (j = 0; j < processCount-i-1; j++) 
-           if (jobs[j]->arrivalTime > jobs[j+1]->arrivalTime)
-              swapJobs(&jobs[j], &jobs[j+1]);
-
-  
-return jobs;
+           if (timeline->processes[j]->arrivalTime > timeline->processes[j+1]->arrivalTime)
+              swaptimeline->processes(&timeline->processes[j], &timeline->processes[j+1]);
 
 
 }
@@ -173,36 +170,37 @@ int roundRobin (Timeline *timeline)
     int time=0;
     int j=0; 
     int i=0;
-    int a=1;
+
     int runTime = timeline->runTime;
     int processCount = timeline->processCount;
     int quantumTime  = timeline->timeQuantum;
+    sortByArrivalTime(timeline);
 
     
     while (time < =runTime) {
         
-        if (jobs[i]->arrivalTime >= time){
+        if (timeline->processes[i]->arrivalTime >= time){
 
-        printf("Time is %d: %s arrived  ",jobs[i]->arrivalTime,jobs[i++]->processName);  
+        printf("Time is %d: %s arrived  ",timeline->processes[i]->arrivalTime,timeline->processes[i++]->processName);  
        
 
         }
 
         for (j=0; j< processCount ; j++){
 
-            if (jobs[j%processCount]->timeLeft>0){
+            if (timeline->processes[j%processCount]->timeLeft>0){
             
-            printf("Time is %d: %s selected (burst %d) ",time,jobs[j%processCount]->processName, jobs[j%processCount]->burstTime);
+            printf("Time is %d: %s selected (burst %d) ",time,timeline->processes[j%processCount]->processName, timeline->processes[j%processCount]->burstTime);
 
-            if (jobs[j%processCount]->timeLeft <= quantumTime && (time + jobs[j%processCount]->timeLeft<= runTime)){
-                time = time + jobs[j%processCount]->timeLeft;
-                jobs[j%processCount]->timeLeft = 0;
-                jobs[j%processCount]->endTime = time;
-                printf("Time is %d: %s finished  ",time,jobs[j%processCount]->processName); 
+            if (timeline->processes[j%processCount]->timeLeft <= quantumTime && (time + timeline->processes[j%processCount]->timeLeft<= runTime)){
+                time = time + timeline->processes[j%processCount]->timeLeft;
+                timeline->processes[j%processCount]->timeLeft = 0;
+                timeline->processes[j%processCount]->endTime = time;
+                printf("Time is %d: %s finished  ",time,timeline->processes[j%processCount]->processName); 
             }
             else {
                 time = time + quantumTime;
-                jobs[j%processCount]->timeLeft = (jobs[j%processCount]->timeLeft) - quantumTime;   
+                timeline->processes[j%processCount]->timeLeft = (timeline->processes[j%processCount]->timeLeft) - quantumTime;   
             }
 
 
