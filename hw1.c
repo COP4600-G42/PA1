@@ -16,6 +16,8 @@ typedef struct Process {
     char *processName;
     int arrivalTime;
     int burstTime;
+    int timeLeft;
+    int endTime;
 } Process;
 
 // Holds information for a timeline of processes
@@ -26,7 +28,8 @@ typedef struct Timeline {
     int timeQuantum;
 
     Process **processes;
-} Timeline;
+} Timeline; 
+      
 
 Timeline *createTimeline()
 {
@@ -131,6 +134,84 @@ void freeTimeline(Timeline *timeline)
 
     // Free memory for the timeline
     free(timeline);
+}
+void swapJobs(Process *xp, Process *yp)
+{
+    Process temp = *xp;
+    *xp = *yp;
+    *yp = temp;
+}
+Process * arrivalList (Timeline *timeline)
+{  
+   int i,j,a; 
+   int processCount = timeline->processCount;
+   
+   Process* jobs = malloc(sizeof(Process *) * inputTimeline->processCount);
+
+   for (a=0; a<processCount); a++ ){
+
+    timeline->processes[a]->processName = jobs[a]->processName;
+    timeline->processes[a]->arrivalTime= jobs[a]->arrivalTime;
+    timeline->processes[a]->burstTime = jobs[a]->burstTime;
+    timeline->processes[a]->timeLeft = jobs[a]->timeLeft;
+    
+   }
+  
+
+   for (i = 0; i < processCount-1; i++)        
+       for (j = 0; j < processCount-i-1; j++) 
+           if (jobs[j]->arrivalTime > jobs[j+1]->arrivalTime)
+              swapJobs(&jobs[j], &jobs[j+1]);
+
+  
+return jobs;
+
+
+}
+int roundRobin (Timeline *timeline)
+{
+    int time=0;
+    int j=0; 
+    int i=0;
+    int a=1;
+    int runTime = timeline->runTime;
+    int processCount = timeline->processCount;
+    int quantumTime  = timeline->timeQuantum;
+
+    
+    while (time < =runTime) {
+        
+        if (jobs[i]->arrivalTime >= time){
+
+        printf("Time is %d: %s arrived  ",jobs[i]->arrivalTime,jobs[i++]->processName);  
+       
+
+        }
+
+        for (j=0; j< processCount ; j++){
+
+            if (jobs[j%processCount]->timeLeft>0){
+            
+            printf("Time is %d: %s selected (burst %d) ",time,jobs[j%processCount]->processName, jobs[j%processCount]->burstTime);
+
+            if (jobs[j%processCount]->timeLeft <= quantumTime && (time + jobs[j%processCount]->timeLeft<= runTime)){
+                time = time + jobs[j%processCount]->timeLeft;
+                jobs[j%processCount]->timeLeft = 0;
+                jobs[j%processCount]->endTime = time;
+                printf("Time is %d: %s finished  ",time,jobs[j%processCount]->processName); 
+            }
+            else {
+                time = time + quantumTime;
+                jobs[j%processCount]->timeLeft = (jobs[j%processCount]->timeLeft) - quantumTime;   
+            }
+
+
+         }
+
+        }
+        
+        
+    }
 }
 
 int main(void)
