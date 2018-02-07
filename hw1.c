@@ -135,11 +135,12 @@ void freeTimeline(Timeline *timeline)
     // Free memory for the timeline
     free(timeline);
 }
-void swaptimeline->processes(Process *xp, Process *yp)
+
+void swapProcesses(Process **xp, Process **yp)
 {
-    Process temp = *xp;
-    *xp = *yp;
-    *yp = temp;
+    Process temp = **xp;
+    **xp = **yp;
+    **yp = temp;
 }
 void sortByArrivalTime (Timeline *timeline)
 {  
@@ -161,11 +162,11 @@ void sortByArrivalTime (Timeline *timeline)
    for (i = 0; i < processCount-1; i++)        
        for (j = 0; j < processCount-i-1; j++) 
            if (timeline->processes[j]->arrivalTime > timeline->processes[j+1]->arrivalTime)
-              swaptimeline->processes(&timeline->processes[j], &timeline->processes[j+1]);
+              swapProcesses(&timeline->processes[j], &timeline->processes[j+1]);
 
 
 }
-int roundRobin (Timeline *timeline)
+void roundRobin (Timeline *timeline)
 {
     int time=0;
     int j=0; 
@@ -175,13 +176,13 @@ int roundRobin (Timeline *timeline)
     int processCount = timeline->processCount;
     int quantumTime  = timeline->timeQuantum;
     sortByArrivalTime(timeline);
-
     
-    while (time < =runTime) {
+    while (time <= runTime) {
         
         if (timeline->processes[i]->arrivalTime >= time){
 
-        printf("Time is %d: %s arrived  ",timeline->processes[i]->arrivalTime,timeline->processes[i++]->processName);  
+        printf("Time is %d: %s arrived  \n",timeline->processes[i]->arrivalTime,timeline->processes[i]->processName);  
+        i++;
        
 
         }
@@ -190,13 +191,13 @@ int roundRobin (Timeline *timeline)
 
             if (timeline->processes[j%processCount]->timeLeft>0){
             
-            printf("Time is %d: %s selected (burst %d) ",time,timeline->processes[j%processCount]->processName, timeline->processes[j%processCount]->burstTime);
+            printf("Time is %d: %s selected (burst %d) \n",time,timeline->processes[j%processCount]->processName, timeline->processes[j%processCount]->burstTime);
 
             if (timeline->processes[j%processCount]->timeLeft <= quantumTime && (time + timeline->processes[j%processCount]->timeLeft<= runTime)){
                 time = time + timeline->processes[j%processCount]->timeLeft;
                 timeline->processes[j%processCount]->timeLeft = 0;
                 timeline->processes[j%processCount]->endTime = time;
-                printf("Time is %d: %s finished  ",time,timeline->processes[j%processCount]->processName); 
+                printf("Time is %d: %s finished  \n",time,timeline->processes[j%processCount]->processName); 
             }
             else {
                 time = time + quantumTime;
@@ -227,6 +228,8 @@ int main(void)
             printf("Burst Time  : %d\n\n", timeline->processes[i]->burstTime);
         }
     }
+
+    roundRobin(timeline);
 
     freeTimeline(timeline);
 
