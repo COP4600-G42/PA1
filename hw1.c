@@ -213,6 +213,33 @@ void roundRobin (Timeline *timeline)
     }
 }
 
+//preemptive Shortest Job First
+void SJF (Timeline *timeline)
+{
+    int time=0;
+    int j=0; 
+    int i=0;
+	int burstLeftMax=0// this holds the location of the process with least time left
+    int runTime = timeline->runTime;
+    int processCount = timeline->processCount;
+    int quantumTime  = timeline->timeQuantum;
+    sortByArrivalTime(timeline);
+    
+	// logic : preemptive so pay attention to a processArrivel time and burst left
+    while (time <= runTime) {
+		//check : if no process left exit this loop
+
+
+		// loop through process and if its in and has the shortest burst left run it for 1 second and check again
+        for (j=0; j< processCount ; j++){
+			//do if statement comparing process[burstLeftMax].timeleft and process[j].timeleft. if true burstLeftMax=j;
+		}
+		// process[burstLeftMax] is the shortest job so process[burstLeftMax].timeleft--, and whatever lese need to be done
+		// check if process[burstLeftMax] is done, if it is delete it?
+		//increment time so while loop continues
+    }
+}
+ 
 int main(void)
 {
     Timeline *timeline = createTimeline();
