@@ -18,6 +18,8 @@ typedef struct Process {
     int burstTime;
     int timeLeft;
     int endTime;
+    int waitTime;
+    int turnAroundTime;
 } Process;
 
 // Holds information for a timeline of processes
@@ -160,7 +162,7 @@ void sortByArrivalTime(Timeline *timeline)
 
 void roundRobin(Timeline *timeline)
 {
-   
+
 }
 
 void firstComeFirstServed(Timeline *timeline)
@@ -195,7 +197,7 @@ void firstComeFirstServed(Timeline *timeline)
 
 // sorts the process by process burst time left. looks at the list and will bubble sort smallest burst going to index 0. ignores list items on index count and higher
 void sortByburst (int processListIn[] ,int count,Timeline *timeline)
-{  
+{
    int i,j,a;
    int tmpProcessNum = -1;
 	for(i=count-1; i > 0; i-- ){
@@ -209,21 +211,21 @@ void sortByburst (int processListIn[] ,int count,Timeline *timeline)
 
 }
 //preemptive Shortest Job First
-void ShortestJobFirst (Timeline *timeline)
+void shortestJobFirst (Timeline *timeline)
 {
     int time=0; //current time in sequence
     int j=0,k=0,i=0; // looping variables
     int runTime = timeline->runTime;// this holds the run for time
     int processCount = timeline->processCount;
-	 
+
 	int inCount = 0;
 	int change = -1;
 
 	//malloc bc c is not cool like java.
 	int *processListIn = malloc(processCount * sizeof *processListIn);// [processnumber] this is like a queue
-	
+
     //sortByArrivalTime(timeline);
-    
+
 	// logic : preemptive so pay attention to a processArrivel time and burst left
     while (time < runTime) {
 		//check arrivals
@@ -233,10 +235,10 @@ void ShortestJobFirst (Timeline *timeline)
 				processListIn[inCount] = k;
 				inCount++;
 				sortByburst(processListIn,inCount,timeline);
-				
+
 			}
 		}
-		
+
 		// if inCount == 0 stack is empty so we idle
 		if(inCount > 0){
 
@@ -245,7 +247,7 @@ void ShortestJobFirst (Timeline *timeline)
 			//look at wait times, if process is waiting increment it
 			for(i=1; i < inCount; i++){
 				timeline->processes[processListIn[i]]->waitTime = timeline->processes[processListIn[i]]->waitTime +1;
-				
+
 			}
 
 			// process ran
@@ -268,17 +270,17 @@ void ShortestJobFirst (Timeline *timeline)
 				timeline->processes[k]->burstTime = 0;
 			}
 
-			
+
 
 		}else{
 			printf("Time %i: Idle\n", time);
-		}	
-	
-		
+		}
 
-	
 
-		
+
+
+
+
 		time++;
     }
 	printf("Finished at time %i\n\n", time);
