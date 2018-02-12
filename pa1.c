@@ -167,32 +167,53 @@ void roundRobin(Timeline *timeline)
 
 void firstComeFirstServed(Timeline *timeline)
 {
+    Process **processes = timeline->processes;
+    int runTime = timeline->runTime;
+    Process *currentProcess = NULL;
+
     int i;
-    int timeElasped = 0;
-    int processIndex = 0;
+    int pIndex = 0;
 
     sortByArrivalTime(timeline);
 
-    while (timeElasped <= timeline->runTime)
-    {
-        if (timeline->processes[processIndex]->arrivalTime == timeElasped) {
-            printf("Time %d: %s arrived\n", timeElasped, timeline->processes[processIndex]->processName);
-            processIndex++;
+    // Evaluate each unit of time...
+    for (i = 0; i <= timeline->runTime; i++) {
+        // Check for newly arrived processes
+        if (processes[pIndex]->arrivalTime == i) {
+            // Make sure to setup the initial process
+            if (currentProcess == NULL) {
+                currentProcess = processes[pIndex];
+            }
+
+            // Announce the process arrival
+            printf("Time %d: %s arrived\n", i, processes[pIndex]->processName);
+
+            // Setup the initial timeLeft (which is the burstTime)
+            processes[pIndex]->timeLeft = processes[pIndex]->burstTime;
+
+            // Increase the process index to look for the next process
+            pIndex++;
         }
 
-        timeElasped++;
-    }
+        // Check for the start of a process
+        if (currentProcess->timeLeft == currentProcess->burstTime) {
+            // Announce the process selection
+            printf("Time %d: %s selected (burst %d)\n", i, currentProcess->processName, currentProcess->burstTime);
+        }
 
-    // while (timeElasped <= timeline->runTime) {
-    //     for (i = 0; i < timeline->processCount; i++) {
-    //         if (timeline->processes[i]->arrivalTime == timeElasped) {
-    //             printf("Time %d: %s arrived\n", timeElasped, timeline->processes[i]->processName);
-    //         } else {
-    //             printf("Time %d: %s selected (burst %d)\n", timeElasped, timeline->processes[i]->processName, timeline->processes[i]->burstTime);
-    //             timeElasped += timeline->processes[i]->burstTime;
-    //         }
-    //     }
-    // }
+        // Decrement the time left for the current process
+        currentProcess->timeLeft--;
+
+        // If the current process is out of time, then select the new current process
+        if (currentProcess->timeLeft == 0) {
+            currentProcess = processes[pIndex - 1];
+        }
+
+        // Check for the end of the overall run time
+        if (i == timeline->runTime) {
+            printf("Finished at time %d\n", i);
+        }
+    }
 }
 
 // sorts the process by process burst time left. looks at the list and will bubble sort smallest burst going to index 0. ignores list items on index count and higher
