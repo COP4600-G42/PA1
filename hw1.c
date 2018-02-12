@@ -196,7 +196,7 @@ void firstComeFirstServed(Timeline *timeline)
 }
 
 // sorts the process by process burst time left. looks at the list and will bubble sort smallest burst going to index 0. ignores list items on index count and higher
-void sortByburst (int processListIn[] ,int count,Timeline *timeline)
+void sortByburst (int *processListIn, int count, Timeline *timeline)
 {
    int i,j,a;
    int tmpProcessNum = -1;
@@ -222,14 +222,14 @@ void shortestJobFirst (Timeline *timeline)
 	int change = -1;
 
 	// malloc bc c is not cool like java.
-	int *processListIn = malloc(processCount * sizeof *processListIn); // [processnumber] this is like a queue
+	int *processListIn = malloc(sizeof(int) * processCount); // [processnumber] this is like a queue
 
     // sortByArrivalTime(timeline);
 
 	// logic: preemptive so pay attention to a processArrivel time and burst left
     while (time < runTime) {
 		//check arrivals
-		for (k=0; k < timeline->processCount; k++) {
+		for (k = 0; k < timeline->processCount; k++) {
 			if (timeline->processes[k]->arrivalTime == time) {
 				printf("Time %i: %s arrived\n", time, timeline->processes[k]->processName);
 				processListIn[inCount] = k;
