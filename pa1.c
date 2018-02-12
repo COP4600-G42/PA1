@@ -219,17 +219,16 @@ void firstComeFirstServed(Timeline *timeline)
 // sorts the process by process burst time left. looks at the list and will bubble sort smallest burst going to index 0. ignores list items on index count and higher
 void sortByburst (int *processListIn, int count, Timeline *timeline)
 {
-   int i,j,a;
-   int tmpProcessNum = -1;
-	for(i=count-1; i > 0; i-- ){
-		if(timeline->processes[processListIn[i]]->burstTime < timeline->processes[processListIn[i-1]]->burstTime ){
-			tmpProcessNum = processListIn[i];
-			processListIn[i] = processListIn[i-1];
-			processListIn[i-1] =tmpProcessNum;
-		}
-	}
-	return;
+    int i, j, a;
+    int tmpProcessNum = -1;
 
+    for (i = (count - 1); i > 0; i--) {
+        if (timeline->processes[processListIn[i]]->burstTime < timeline->processes[processListIn[i - 1]]->burstTime) {
+            tmpProcessNum = processListIn[i];
+            processListIn[i] = processListIn[i - 1];
+            processListIn[i - 1] = tmpProcessNum;
+        }
+    }
 }
 
 //preemptive Shortest Job First
@@ -240,69 +239,69 @@ void shortestJobFirst (Timeline *timeline)
     int runTime = timeline->runTime; // this holds the run for time
     int processCount = timeline->processCount;
 
-	int inCount = 0;
-	int change = -1;
+    int inCount = 0;
+    int change = -1;
 
-	// malloc bc c is not cool like java.
-	int *processListIn = malloc(sizeof(int) * processCount); // [processnumber] this is like a queue
+    // malloc bc c is not cool like java.
+    int *processListIn = malloc(sizeof(int) * processCount); // [processnumber] this is like a queue
 
     // sortByArrivalTime(timeline);
 
-	// logic: preemptive so pay attention to a processArrivel time and burst left
+    // logic: preemptive so pay attention to a processArrivel time and burst left
     while (time < runTime) {
-		//check arrivals
-		for (k = 0; k < timeline->processCount; k++) {
-			if (timeline->processes[k]->arrivalTime == time) {
-				printf("Time %i: %s arrived\n", time, timeline->processes[k]->processName);
-				processListIn[inCount] = k;
-				inCount++;
-				sortByburst(processListIn, inCount, timeline);
-			}
-		}
+        //check arrivals
+        for (k = 0; k < timeline->processCount; k++) {
+            if (timeline->processes[k]->arrivalTime == time) {
+                printf("Time %i: %s arrived\n", time, timeline->processes[k]->processName);
+                processListIn[inCount] = k;
+                inCount++;
+                sortByburst(processListIn, inCount, timeline);
+            }
+        }
 
-		// if inCount == 0 stack is empty so we idle
-		if (inCount > 0) {
-			k = processListIn[0]; // holds the location of the current process in the timeline
+        // if inCount == 0 stack is empty so we idle
+        if (inCount > 0) {
+            k = processListIn[0]; // holds the location of the current process in the timeline
 
-			//look at wait times, if process is waiting increment it
-			for (i=1; i < inCount; i++) {
-				timeline->processes[processListIn[i]]->waitTime += 1;
-			}
+            //look at wait times, if process is waiting increment it
+            for (i=1; i < inCount; i++) {
+                timeline->processes[processListIn[i]]->waitTime += 1;
+            }
 
-			// process ran
-			if (change != processListIn[0]) {
-				printf("Time %i: %s selected (burst %i)\n", time,timeline->processes[k]->processName, timeline->processes[k]->burstTime);
-				change = processListIn[0];
-			}
+            // process ran
+            if (change != processListIn[0]) {
+                printf("Time %i: %s selected (burst %i)\n", time,timeline->processes[k]->processName, timeline->processes[k]->burstTime);
+                change = processListIn[0];
+            }
 
-			// process ran so update burst
-			timeline->processes[k]->burstTime -= 1;
-			timeline->processes[k]->timeLeft = timeline->processes[k]->burstTime;
+            // process ran so update burst
+            timeline->processes[k]->burstTime -= 1;
+            timeline->processes[k]->timeLeft = timeline->processes[k]->burstTime;
 
-			// check if complete
-			if (timeline->processes[k]->burstTime == 0) {
-				printf("Time %i: %s finished\n", time + 1, timeline->processes[k]->processName);
-				timeline->processes[k]->endTime = time + 1;
-				timeline->processes[k]->turnAroundTime = timeline->processes[k]->endTime - timeline->processes[k]->arrivalTime;
-				timeline->processes[k]->burstTime = 2147483000;
-				sortByburst(processListIn, inCount, timeline);
-				inCount--;
-				timeline->processes[k]->burstTime = 0;
-			}
-		} else {
-			printf("Time %i: Idle\n", time);
-		}
+            // check if complete
+            if (timeline->processes[k]->burstTime == 0) {
+                printf("Time %i: %s finished\n", time + 1, timeline->processes[k]->processName);
+                timeline->processes[k]->endTime = time + 1;
+                timeline->processes[k]->turnAroundTime = timeline->processes[k]->endTime - timeline->processes[k]->arrivalTime;
+                timeline->processes[k]->burstTime = 2147483000;
+                sortByburst(processListIn, inCount, timeline);
+                inCount--;
+                timeline->processes[k]->burstTime = 0;
+            }
+        } else {
+            printf("Time %i: Idle\n", time);
+        }
 
-		time++;
+        time++;
     }
 
-	printf("Finished at time %i\n\n", time);
+    printf("Finished at time %i\n\n", time);
 
-	for (i = 0; i < timeline->processCount; i++) {
-		printf("%s wait %i turnaround %i\n", timeline->processes[i]->processName, timeline->processes[i]->waitTime, timeline->processes[i]->turnAroundTime);
+    for (i = 0; i < timeline->processCount; i++) {
+        printf("%s wait %i turnaround %i\n", timeline->processes[i]->processName, timeline->processes[i]->waitTime, timeline->processes[i]->turnAroundTime);
     }
 
-	free(processListIn);
+    free(processListIn);
 }
 
 void printHeader(Timeline *timeline)
