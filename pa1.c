@@ -65,9 +65,11 @@ Timeline *createTimeline(char *inputFileName)
         } else if (strcmp(tempToken, "use") == 0) {
             if (strcmp(tempValue, "fcfs") == 0) {
                 inputTimeline->schedulingAlgorithm = FCFS;
+                inputTimeline->timeQuantum = 0;
                 headerComplete = 1;
             } else if (strcmp(tempValue, "sjf") == 0) {
                 inputTimeline->schedulingAlgorithm = SJF;
+                inputTimeline->timeQuantum = 0;
                 headerComplete = 1;
             } else if (strcmp(tempValue, "rr") == 0) {
                 inputTimeline->schedulingAlgorithm = RR;
@@ -78,7 +80,6 @@ Timeline *createTimeline(char *inputFileName)
         }
 
         if (headerComplete) {
-            inputTimeline->timeQuantum = 0;
             break;
         }
     }
@@ -162,7 +163,105 @@ void sortByArrivalTime(Timeline *timeline)
 
 void roundRobin(Timeline *timeline)
 {
+    int time=0;
+    int j=0;
+    int i=0;
+    int arrived=0;
+    int k=0;
+    int finishProcesses=0;
+    int turnaround =0;
+    int waitTime=0;
 
+    int runTime = timeline->runTime;
+    int processCount = timeline->processCount;
+    int quantumTime  = timeline->timeQuantum;
+    sortByArrivalTime(timeline);
+
+    while (time < runTime)
+   {
+         if (timeline->processes[j%processCount]->arrivalTime > time) //.....if the first process arrival time is bigger idle until start time
+            {
+
+                 printf("Time is %d: Idle \n",time);
+                 time++;
+
+
+             }
+
+        for (j=0; j< processCount ; j++)
+        {
+            // when the arrival time equals the current time or more process gets selected
+            if (timeline->processes[j%processCount]->arrivalTime <= time)
+            {
+                if (timeline->processes[i%processCount]->arrivalTime == time)//only print arrival for equal time
+                {
+                printf("Time is %d: %s arrived  \n",timeline->processes[i%processCount]->arrivalTime,timeline->processes[i%processCount]->processName);
+                timeline->processes[i%processCount]->timeLeft = timeline->processes[i%processCount]->burstTime;
+                i++;
+                arrived++;
+                }
+
+                if (timeline->processes[j%processCount]->timeLeft > 0  )
+                {
+
+                     printf("Time is %d: %s selected (burst %d) \n",time,timeline->processes[j%processCount]->processName, timeline->processes[j%processCount]->timeLeft);
+
+                        if (timeline->processes[j%processCount]->timeLeft <= quantumTime )
+                        {
+
+                                time = time + timeline->processes[j%processCount]->timeLeft;
+                                timeline->processes[j%processCount]->timeLeft = 0;
+                                timeline->processes[j%processCount]->endTime = time;
+                                printf("Time is %d: %s finished  \n",time,timeline->processes[j%processCount]->processName);
+                                finishProcesses++;
+                        }
+                        else if  (timeline->processes[j%processCount]->timeLeft > quantumTime )
+                        {
+                                time = time + quantumTime;
+                                timeline->processes[j%processCount]->timeLeft = (timeline->processes[j%processCount]->timeLeft) - quantumTime;
+                        }
+                        if (timeline->processes[i%processCount]->arrivalTime < time && arrived<processCount)
+                        {
+                           printf("Time is %d: %s arrived  \n",timeline->processes[i%processCount]->arrivalTime,timeline->processes[i%processCount]->processName);
+                           timeline->processes[i%processCount]->timeLeft = timeline->processes[i%processCount]->burstTime;
+                            i++;
+                            arrived++;
+                        }
+
+                }
+                if (timeline->processes[j%processCount]->timeLeft == 0  )
+                {
+                    //processes is finish
+                    if (finishProcesses==processCount)
+                    {
+                      if(time <runTime)
+                      {
+                        printf("Time is %d: Idle \n",time);
+                        time++;
+                       }
+                      else if (time >=runTime)
+                      {
+                        printf("Finished at time : %d \n",time);
+
+                       }
+                    }
+
+                }
+                //printf("line 217\n");
+            }
+
+
+        }
+
+    }
+    //turnaround time = endtime- arrival time
+    //wait time = turnaround - bursttime
+   for (k=0; k< processCount ; k++)
+   {
+    turnaround =(timeline->processes[k]->endTime)-(timeline->processes[k]->arrivalTime);
+    waitTime = turnaround - (timeline->processes[k]->burstTime);
+    printf("%s wait %d turnaround %d \n",timeline->processes[k]->processName,waitTime,turnaround);
+   }
 }
 
 void firstComeFirstServed(Timeline *timeline)
