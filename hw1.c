@@ -5,7 +5,7 @@
 #define DEFAULT_INPUT_FILE "processes.in"
 
 // Set to 1 to print debug statements
-#define DEBUG 1
+#define DEBUG 0
 
 #define FCFS  0
 #define SJF   1
@@ -210,6 +210,7 @@ void sortByburst (int *processListIn, int count, Timeline *timeline)
 	return;
 
 }
+
 //preemptive Shortest Job First
 void shortestJobFirst (Timeline *timeline)
 {
@@ -283,6 +284,29 @@ void shortestJobFirst (Timeline *timeline)
 	free(processListIn);
 }
 
+void printHeader(Timeline *timeline)
+{
+    printf("%d processes\n", timeline->processCount);
+
+    switch (timeline->schedulingAlgorithm) {
+        case FCFS:
+            printf("Using First-Come First-Served\n");
+            break;
+        case SJF:
+            printf("Using Shortest Job First\n");
+            break;
+        case RR:
+            printf("Using Round-Robin\n");
+            printf("Quantum %d", timeline->timeQuantum);
+            break;
+        default:
+            printf("ERROR: Invalid scheduling algorithm\n");
+            break;
+    }
+
+    printf("\n");
+}
+
 int main(int argc, char *argv[])
 {
     Timeline *timeline;
@@ -305,17 +329,19 @@ int main(int argc, char *argv[])
         }
     }
 
+    printHeader(timeline);
+
     switch (timeline->schedulingAlgorithm) {
         case FCFS:
-            printf("FCFS\n");
+            if (DEBUG) printf("FCFS\n");
             firstComeFirstServed(timeline);
             break;
         case SJF:
-            printf("SJF\n");
+            if (DEBUG) printf("SJF\n");
             shortestJobFirst(timeline);
             break;
         case RR:
-            printf("RR\n");
+            if (DEBUG) printf("RR\n");
             roundRobin(timeline);
             break;
         default:
