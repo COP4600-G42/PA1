@@ -17,6 +17,7 @@ typedef struct Process {
     int arrivalTime;
     int burstTime;
     int timeLeft;
+    int startTime;
     int endTime;
     int waitTime;
     int turnAroundTime;
@@ -149,7 +150,7 @@ void swapProcesses(Process **xp, Process **yp)
 
 void sortByArrivalTime(Timeline *timeline)
 {
-    int i, j, a;
+    int i, j;
     int processCount = timeline->processCount;
 
     for (i = 0; i < processCount - 1; i++) {
@@ -268,8 +269,7 @@ void firstComeFirstServed(Timeline *timeline)
 
     for (i = 0; i <= timeline->runTime; i++) {
 
-        // Check for newly arrived processes
-        // Add any newly arrived processes to the queue
+        // Check for newly arrived processes and add them to the queue
         while (arrivalIndex < timeline->processCount && timeline->processes[arrivalIndex]->arrivalTime == i) {
             // Announce the process arrival
             printf("Time %d: %s arrived\n", i, timeline->processes[arrivalIndex]->processName);
@@ -289,19 +289,22 @@ void firstComeFirstServed(Timeline *timeline)
         }
 
         if (queueIndex != -1 && queueIndex < timeline->processCount && queue[queueIndex] != NULL) {
-            // Select a process
+            // Select a process (if available)
             if (queue[queueIndex]->timeLeft == queue[queueIndex]->burstTime) {
                 printf("Time %d: %s selected (burst %d)\n", i, queue[queueIndex]->processName, queue[queueIndex]->burstTime);
+                queue[queueIndex]->startTime = i;
                 queue[queueIndex]->timeLeft--;
             // Check to see if a process has finished
             } else if (queue[queueIndex]->timeLeft <= 0) {
                 printf("Time %d: %s finished\n", i, queue[queueIndex]->processName);
+                queue[queueIndex]->endTime = i;
 
                 queueIndex++;
 
                 // Check to see if there is a process already avilable to select
                 if (queueIndex < timeline->processCount && queue[queueIndex] != NULL) {
                     printf("Time %d: %s selected (burst %d)\n", i, queue[queueIndex]->processName, queue[queueIndex]->burstTime);
+                    queue[queueIndex]->startTime = i;
                     queue[queueIndex]->timeLeft--;
                 }
             } else {
@@ -309,6 +312,7 @@ void firstComeFirstServed(Timeline *timeline)
             }
 
             idleMode = 0;
+        // If there are no processes in the queue, then idle
         } else if (idleMode == 0) {
             printf("Time %d: Idle\n", i);
             idleMode = 1;
@@ -316,7 +320,14 @@ void firstComeFirstServed(Timeline *timeline)
     }
 
     // Announce the end of the overall run time
-    printf("Finished at time %d\n", (i - 1));
+    printf("Finished at time %d\n\n", (i - 1));
+
+    // Print the wait and turnaround time footer
+    for (i = 0; i < timeline->processCount; i++) {
+        timeline->processes[i]->turnAroundTime = timeline->processes[i]->endTime - timeline->processes[i]->arrivalTime;
+        timeline->processes[i]->waitTime = timeline->processes[i]->startTime - timeline->processes[i]->arrivalTime;
+        printf("%s wait %d turnaround %d\n", timeline->processes[i]->processName, timeline->processes[i]->waitTime, timeline->processes[i]->turnAroundTime); 
+    }
 
     free(queue);
 }
@@ -324,7 +335,7 @@ void firstComeFirstServed(Timeline *timeline)
 // sorts the process by process burst time left. looks at the list and will bubble sort smallest burst going to index 0. ignores list items on index count and higher
 void sortByburst (int *processListIn, int count, Timeline *timeline)
 {
-    int i, j, a;
+    int i;
     int tmpProcessNum = -1;
 
     for (i = (count - 1); i > 0; i--) {
@@ -340,7 +351,7 @@ void sortByburst (int *processListIn, int count, Timeline *timeline)
 void shortestJobFirst (Timeline *timeline)
 {
     int time = 0; // current time in sequence
-    int j = 0, k = 0, i = 0; // looping variables
+    int k = 0, i = 0; // looping variables
     int runTime = timeline->runTime; // this holds the run for time
     int processCount = timeline->processCount;
 
