@@ -253,53 +253,69 @@ void roundRobin(Timeline *timeline)
 
 void firstComeFirstServed(Timeline *timeline)
 {
-    Process **processes = timeline->processes;
-    int runTime = timeline->runTime;
-    Process *currentProcess = NULL;
+    int queueIndex = -1;
+    int arrivalIndex = 0;
 
     int i;
-    int pIndex = 0;
+    int idleMode = 0;
+
+    Process **queue = calloc(timeline->processCount, sizeof(Process *));
 
     sortByArrivalTime(timeline);
 
-    // Evaluate each unit of time...
     for (i = 0; i <= timeline->runTime; i++) {
+
         // Check for newly arrived processes
-        if (processes[pIndex]->arrivalTime == i) {
-            // Make sure to setup the initial process
-            if (currentProcess == NULL) {
-                currentProcess = processes[pIndex];
+        // Add any newly arrived processes to the queue
+        while (arrivalIndex < timeline->processCount && timeline->processes[arrivalIndex]->arrivalTime == i) {
+            // Announce the process arrival
+            printf("Time %d: %s arrived\n", i, timeline->processes[arrivalIndex]->processName);
+
+            // Setup the initial time left (which is the burst time)
+            timeline->processes[arrivalIndex]->timeLeft = timeline->processes[arrivalIndex]->burstTime;
+
+            // Add the process to the queue
+            queue[arrivalIndex] = timeline->processes[arrivalIndex];
+
+            // The first process has arrived
+            if (queueIndex == -1) {
+                queueIndex = 0;
             }
 
-            // Announce the process arrival
-            printf("Time %d: %s arrived\n", i, processes[pIndex]->processName);
-
-            // Setup the initial timeLeft (which is the burstTime)
-            processes[pIndex]->timeLeft = processes[pIndex]->burstTime;
-
-            // Increase the process index to look for the next process
-            pIndex++;
+            arrivalIndex++;
         }
 
-        // Check for the start of a process
-        if (currentProcess->timeLeft == currentProcess->burstTime) {
-            // Announce the process selection
-            printf("Time %d: %s selected (burst %d)\n", i, currentProcess->processName, currentProcess->burstTime);
-        }
+        if (queueIndex != -1 && queueIndex < timeline->processCount && queue[queueIndex] != NULL) {
+            // Select a process
+            if (queue[queueIndex]->timeLeft == queue[queueIndex]->burstTime) {
+                printf("Time %d: %s selected (burst %d)\n", i, queue[queueIndex]->processName, queue[queueIndex]->burstTime);
+                queue[queueIndex]->timeLeft--;
+            // Check to see if a process has finished
+            } else if (queue[queueIndex]->timeLeft <= 0) {
+                printf("Time %d: %s finished\n", i, queue[queueIndex]->processName);
 
-        // Decrement the time left for the current process
-        currentProcess->timeLeft--;
+                queueIndex++;
 
-        // If the current process is out of time, then select the new current process
-        if (currentProcess->timeLeft == 0) {
-            currentProcess = processes[pIndex - 1];
-        }
+                // Check to see if there is a process already avilable to select
+                if (queueIndex < timeline->processCount && queue[queueIndex] != NULL) {
+                    printf("Time %d: %s selected (burst %d)\n", i, queue[queueIndex]->processName, queue[queueIndex]->burstTime);
+                    queue[queueIndex]->timeLeft--;
+                }
+            } else {
+                queue[queueIndex]->timeLeft--;
+            }
 
-        // Check for the end of the overall run time
-        if (i == timeline->runTime) {
-            printf("Finished at time %d\n", i);
+            idleMode = 0;
+        } else if (idleMode == 0) {
+            printf("Time %d: Idle\n", i);
+            idleMode = 1;
         }
     }
+
+    // Announce the end of the overall run time
+    printf("Finished at time %d\n", (i - 1));
+
+    free(queue);
 }
 
 // sorts the process by process burst time left. looks at the list and will bubble sort smallest burst going to index 0. ignores list items on index count and higher
