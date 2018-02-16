@@ -232,7 +232,7 @@ void roundRobin(Timeline *timeline)
                             printf("Time %d: Idle \n", time);
                             time++;
                         } else if (time >= runTime) {
-                            printf("Finished at time : %d \n", time);
+                            printf("Finished at time %d \n", time);
                             break;
                         }
                     }
