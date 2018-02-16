@@ -420,7 +420,7 @@ void printHeader(Timeline *timeline)
         break;
     case RR:
         printf("Using Round-Robin\n");
-        printf("Quantum %d", timeline->timeQuantum);
+        printf("Quantum %d\n", timeline->timeQuantum);
         break;
     default:
         printf("ERROR: Invalid scheduling algorithm\n");
