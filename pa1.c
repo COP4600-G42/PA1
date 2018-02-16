@@ -181,7 +181,7 @@ void roundRobin(Timeline *timeline)
     {
         if (timeline->processes[j % processCount]->arrivalTime > time) //.....if the first process arrival time is bigger idle until start time
         {
-            printf("Time is %d: Idle \n", time);
+            printf("Time %d: Idle \n", time);
             time++;
         }
 
@@ -192,7 +192,7 @@ void roundRobin(Timeline *timeline)
             {
                 if (timeline->processes[i % processCount]->arrivalTime == time) //only print arrival for equal time
                 {
-                    printf("Time is %d: %s arrived  \n", timeline->processes[i % processCount]->arrivalTime, timeline->processes[i % processCount]->processName);
+                    printf("Time %d: %s arrived  \n", timeline->processes[i % processCount]->arrivalTime, timeline->processes[i % processCount]->processName);
                     timeline->processes[i % processCount]->timeLeft = timeline->processes[i % processCount]->burstTime;
                     i++;
                     arrived++;
@@ -200,14 +200,14 @@ void roundRobin(Timeline *timeline)
 
                 if (timeline->processes[j % processCount]->timeLeft > 0  )
                 {
-                    printf("Time is %d: %s selected (burst %d) \n", time, timeline->processes[j % processCount]->processName, timeline->processes[j % processCount]->timeLeft);
+                    printf("Time %d: %s selected (burst %d) \n", time, timeline->processes[j % processCount]->processName, timeline->processes[j % processCount]->timeLeft);
 
                     if (timeline->processes[j % processCount]->timeLeft <= quantumTime ) {
 
                         time = time + timeline->processes[j % processCount]->timeLeft;
                         timeline->processes[j % processCount]->timeLeft = 0;
                         timeline->processes[j % processCount]->endTime = time;
-                        printf("Time is %d: %s finished  \n", time, timeline->processes[j % processCount]->processName);
+                        printf("Time %d: %s finished  \n", time, timeline->processes[j % processCount]->processName);
                         finishProcesses++;
                     } else if (timeline->processes[j % processCount]->timeLeft > quantumTime ) {
                         time = time + quantumTime;
@@ -215,7 +215,7 @@ void roundRobin(Timeline *timeline)
                     }
 
                     if (timeline->processes[i % processCount]->arrivalTime < time && arrived < processCount) {
-                        printf("Time is %d: %s arrived  \n", timeline->processes[i % processCount]->arrivalTime, timeline->processes[i % processCount]->processName);
+                        printf("Time %d: %s arrived  \n", timeline->processes[i % processCount]->arrivalTime, timeline->processes[i % processCount]->processName);
                         timeline->processes[i % processCount]->timeLeft = timeline->processes[i % processCount]->burstTime;
                         i++;
                         arrived++;
@@ -229,10 +229,11 @@ void roundRobin(Timeline *timeline)
                     {
                         if (time < runTime)
                         {
-                            printf("Time is %d: Idle \n", time);
+                            printf("Time %d: Idle \n", time);
                             time++;
                         } else if (time >= runTime) {
                             printf("Finished at time : %d \n", time);
+                            break;
                         }
                     }
                 }
