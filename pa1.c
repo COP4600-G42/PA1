@@ -245,6 +245,8 @@ void roundRobin(Timeline *timeline)
     //turnaround time = endtime- arrival time
     //wait time = turnaround - bursttime
 
+    printf("\n");
+
     for (k = 0; k < processCount ; k++) {
         turnaround = (timeline->processes[k]->endTime) - (timeline->processes[k]->arrivalTime);
         waitTime = turnaround - (timeline->processes[k]->burstTime);
