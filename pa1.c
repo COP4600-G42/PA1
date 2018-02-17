@@ -335,18 +335,19 @@ void firstComeFirstServed(Timeline *timeline)
 // sorts the process by process burst time left. looks at the list and will bubble sort smallest burst going to index 0. ignores list items on index count and higher
 void sortByburst (int *processListIn, int count, Timeline *timeline)
 {
-    int i;
+    int i,j;
     int tmpProcessNum = -1;
-
-    for (i = (count - 1); i > 0; i--) {
-        if (timeline->processes[processListIn[i]]->burstTime < timeline->processes[processListIn[i - 1]]->burstTime) {
-            tmpProcessNum = processListIn[i];
-            processListIn[i] = processListIn[i - 1];
-            processListIn[i - 1] = tmpProcessNum;
+    
+    for (j = 1; j < count; j++) {
+        for (i = (count - 1); i > 0; i--) {
+            if (timeline->processes[processListIn[i]]->burstTime < timeline->processes[processListIn[i - 1]]->burstTime) {
+                tmpProcessNum = processListIn[i];
+                processListIn[i] = processListIn[i - 1];
+                processListIn[i - 1] = tmpProcessNum;
+            }
         }
     }
 }
-
 //preemptive Shortest Job First
 void shortestJobFirst (Timeline *timeline)
 {
@@ -354,15 +355,19 @@ void shortestJobFirst (Timeline *timeline)
     int k = 0, i = 0; // looping variables
     int runTime = timeline->runTime; // this holds the run for time
     int processCount = timeline->processCount;
-
+    
     int inCount = 0;
     int change = -1;
-
+    
     // malloc bc c is not cool like java.
     int *processListIn = malloc(sizeof(int) * processCount); // [processnumber] this is like a queue
-
+    for (k = 0; k < timeline->processCount; k++) {
+        timeline->processes[k]->waitTime = 0;
+        timeline->processes[k]->turnAroundTime = 0;
+    }
     // sortByArrivalTime(timeline);
-
+    //printf(timeline->processes[0]->processName);
+    //printf(timeline->processes[1]->processName);
     // logic: preemptive so pay attention to a processArrivel time and burst left
     while (time < runTime) {
         //check arrivals
@@ -374,26 +379,26 @@ void shortestJobFirst (Timeline *timeline)
                 sortByburst(processListIn, inCount, timeline);
             }
         }
-
+        
         // if inCount == 0 stack is empty so we idle
         if (inCount > 0) {
             k = processListIn[0]; // holds the location of the current process in the timeline
-
+            
             //look at wait times, if process is waiting increment it
             for (i = 1; i < inCount; i++) {
                 timeline->processes[processListIn[i]]->waitTime += 1;
             }
-
+            
             // process ran
             if (change != processListIn[0]) {
                 printf("Time %i: %s selected (burst %i)\n", time, timeline->processes[k]->processName, timeline->processes[k]->burstTime);
                 change = processListIn[0];
             }
-
+            
             // process ran so update burst
             timeline->processes[k]->burstTime -= 1;
             timeline->processes[k]->timeLeft = timeline->processes[k]->burstTime;
-
+            
             // check if complete
             if (timeline->processes[k]->burstTime == 0) {
                 printf("Time %i: %s finished\n", time + 1, timeline->processes[k]->processName);
@@ -407,19 +412,18 @@ void shortestJobFirst (Timeline *timeline)
         } else {
             printf("Time %i: Idle\n", time);
         }
-
+        
         time++;
     }
-
+    
     printf("Finished at time %i\n\n", time);
-
+    
     for (i = 0; i < timeline->processCount; i++) {
         printf("%s wait %i turnaround %i\n", timeline->processes[i]->processName, timeline->processes[i]->waitTime, timeline->processes[i]->turnAroundTime);
     }
-
+    
     free(processListIn);
 }
-
 void printHeader(Timeline *timeline)
 {
     printf("%d processes\n", timeline->processCount);
